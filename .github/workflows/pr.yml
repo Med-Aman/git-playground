@@ -2,8 +2,7 @@ name: playground-foo
 
 on:
   push:
-    branches:
-    - master
+    branches: ["**"]
 
 jobs:
   playground:
