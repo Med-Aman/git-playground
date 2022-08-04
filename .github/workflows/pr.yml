@@ -7,6 +7,7 @@ on:
 jobs:
   playground:
     env:
+      BRANCH: ${{ github.event.pull_request.head.ref }} | sed -r 's#/+#-#g'
       DESTINATION_PATH: ${{github.event.repository.name}}/${{ github.event.pull_request.head.ref }}/${{github.run_number}}.zip
     runs-on: ubuntu-latest
     steps:
