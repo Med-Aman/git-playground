@@ -8,7 +8,7 @@ on:
 jobs:
   playground:
     env:
-      PAT: ${{ secrets.PAT }}
+      DESTINATION_PATH: ${{github.event.repository.name}}/${GITHUB_REF##*/}/$GITHUB_RUN_NUMBER.zip
     runs-on: ubuntu-latest
     steps:
     - name: checkout
@@ -36,3 +36,6 @@ jobs:
 
     - name: Branch name in raw form
       run: echo $GITHUB_REF
+
+    - name: Build action artifacts folder name
+      run: echo $DESTINATION_PATH
