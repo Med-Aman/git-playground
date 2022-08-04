@@ -18,11 +18,11 @@ jobs:
 
     - name: env vars in step name ${{ github.ref }}
       env:
-        GITHUB_REF: ${{ github.ref}}
-      run: echo $GITHUB_REF
+        GITHUB_REF_NEW: ${{ github.ref}}
+      run: echo $GITHUB_REF_NEW
 
     - name: Branch name
-      run: echo ${GITHUB_REF##*/}
+      run: echo $GITHUB_REF
 
     - name: Repo name
       run: echo ${{github.event.repository.name}}
