@@ -36,3 +36,6 @@ jobs:
 
     - name: Build action artifacts folder name
       run: echo $DESTINATION_PATH
+
+    - name: Branch name
+      run: echo $BRANCH
