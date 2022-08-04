@@ -6,9 +6,6 @@ on:
 
 jobs:
   playground:
-    env:
-      BRANCH: VERSION=$(echo ${GITHUB_REF#refs/heads/} | sed -r 's#/+#-#g')
-      DESTINATION_PATH: ${{github.event.repository.name}}/${{ github.event.pull_request.head.ref }}/${{github.run_number}}.zip
     runs-on: ubuntu-latest
     steps:
     - name: checkout
@@ -31,17 +28,16 @@ jobs:
     - name: Github action number
       run: echo ${{github.run_number}}
 
-    - name: Build branch name
-      id: buildBranchName
+    - name: Build Destination path
       run: |
         BRANCH_NAME=$(echo ${{ github.event.pull_request.head.ref }} | sed -r 's#/+#-#g')
-        echo ::set-output name=branch_name::${BRANCH_NAME}
+        echo "DESTINATION_PATH=${{github.event.repository.name}}/${BRANCH_NAME}/${{github.run_number}}" >> $GITHUB_ENV
 
-    - name: Build action artifacts folder name
-      run: echo $DESTINATION_PATH
+    - name: Check Destination path
+      run: echo "${{ env.DESTINATION_PATH }}"
 
     - name: Branch name
       run: echo $BRANCH
 
     - name: Access output
-      run: ${{ steps.buildBranchName.outputs.branch_name }}
+      run: echo ${{ steps.buildBranchName.outputs.branch_name }}
