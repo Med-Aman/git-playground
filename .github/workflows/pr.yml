@@ -1,0 +1,38 @@
+name: playground-foo
+
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+  playground:
+    env:
+      PAT: ${{ secrets.PAT }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+
+    - name: env vars in step name $GITHUB_REPOSITORY
+      run: echo $GITHUB_REPOSITORY
+
+    - name: env vars in step name ${{ github.ref }}
+      env:
+        GITHUB_REF: ${{ github.ref}}
+      run: echo $GITHUB_REF
+
+    - name: Branch name
+      run: echo $GITHUB_REF | cut -d '/' -f 3- | tr / -
+
+    - name: Repo name
+      run: echo $GITHUB_REPOSITORY | cut -d '/' -f 3- | tr / -
+
+    - name: Github action number
+      run: echo $GITHUB_RUN_NUMBER
+
+    - name: Repo name in raw form
+      run: echo $GITHUB_REPOSITORY
+
+    - name: Branch name in raw form
+      run: echo $GITHUB_REF
