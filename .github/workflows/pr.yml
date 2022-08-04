@@ -31,7 +31,7 @@ jobs:
       run: echo ${{github.run_number}}
 
     - name: Branch name in raw form
-      run: echo ${{ github.event.pull_request.head.ref }} | sed -r 's#/+#-#g'
+      run: echo ${{ github.event.pull_request.head.ref }} | cut -d '/' -f 3- | tr / -
 
     - name: Build action artifacts folder name
       run: echo $DESTINATION_PATH
