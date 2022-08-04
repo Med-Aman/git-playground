@@ -1,7 +1,7 @@
 name: playground-foo
 
 on:
-  push:
+  pull_request:
     branches: ["**"]
 
 jobs:
