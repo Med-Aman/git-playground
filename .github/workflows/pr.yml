@@ -11,6 +11,11 @@ jobs:
     - name: checkout
       uses: actions/checkout@v2
 
+    - name: Build Destination path
+      run: |
+        BRANCH_NAME=$(echo ${{ github.event.pull_request.head.ref }} | sed -r 's#/+#-#g')
+        echo "DESTINATION_PATH=${{github.event.repository.name}}/${BRANCH_NAME}/${{github.run_number}}" >> $GITHUB_ENV
+
     - name: env vars in step name $GITHUB_REPOSITORY
       run: echo $GITHUB_REPOSITORY
 
@@ -28,16 +33,22 @@ jobs:
     - name: Github action number
       run: echo ${{github.run_number}}
 
-    - name: Build Destination path
-      run: |
-        BRANCH_NAME=$(echo ${{ github.event.pull_request.head.ref }} | sed -r 's#/+#-#g')
-        echo "DESTINATION_PATH=${{github.event.repository.name}}/${BRANCH_NAME}/${{github.run_number}}" >> $GITHUB_ENV
-
     - name: Check Destination path
       run: echo "${{ env.DESTINATION_PATH }}"
 
     - name: Branch name
       run: echo $BRANCH
 
-    - name: Access output
-      run: echo ${{ steps.buildBranchName.outputs.branch_name }}
+    - name: Build Event Spec Destination path
+      run: |
+        echo "EVENT_SPEC_DESTINATION_PATH= medly-dev-test-cases/${{ github.event.repository.name }}/event-spec" >> $GITHUB_ENV
+
+    - name: Build Test Coverage Destination path
+      run: |
+        echo "TEST_COVERAGE_DESTINATION_PATH= medly-dev-test-cases/${{ github.event.repository.name }}/test-coverage" >> $GITHUB_ENV
+
+    - name: Check event spec dest path
+      run: echo $EVENT_SPEC_DESTINATION_PATH
+
+    - name: Check test coverage dest path
+      run: echo $TEST_COVERAGE_DESTINATION_PATH
