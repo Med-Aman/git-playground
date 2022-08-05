@@ -7,12 +7,15 @@ on:
 
 jobs:
   playground:
-    env:
-      DESTINATION_PATH: ${{github.event.repository.name}}/${{ github.ref_name }}/${{github.run_number}}.zip
     runs-on: ubuntu-latest
     steps:
     - name: checkout
       uses: actions/checkout@v2
+
+    - name: Build Destination path
+      run: |
+        BRANCH_NAME=$(echo ${{ github.ref_name }} | sed -r 's#/+#-#g')
+        echo "DESTINATION_PATH=${{github.event.repository.name}}/${BRANCH_NAME}/${{github.run_number}}" >> $GITHUB_ENV
 
     - name: env vars in step name $GITHUB_REPOSITORY
       run: echo $GITHUB_REPOSITORY
