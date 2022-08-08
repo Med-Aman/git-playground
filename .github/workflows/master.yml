@@ -1,0 +1,22 @@
+name: Upload artifacts and deploy to lower environment
+
+on:
+  push:
+    branches: [master, production]
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set environment variable based on branch
+      run: |
+        BRANCH_NAME=$(echo ${{ github.ref_name }} | sed -r 's#/+#-#g')
+        if [ ${{ github.ref == 'refs/heads/production' }} ]
+        then
+           echo "API_SPEC_DESTINATION_PATH=abc.test.io" >> $GITHUB_ENV
+        else
+           echo "API_SPEC_DESTINATION_PATH=abc.dev-test.io" >> $GITHUB_ENV
+        fi
+
+    - name: Build Deployable Zip Destination path
+      run: echo ${{ env.API_SPEC_DESTINATION_PATH }}
