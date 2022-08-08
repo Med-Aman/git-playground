@@ -2,7 +2,7 @@ name: Upload artifacts and deploy to lower environment
 
 on:
   push:
-    branches: [master, production, try-and-test]
+    branches: [master, production]
 
 jobs:
   main:

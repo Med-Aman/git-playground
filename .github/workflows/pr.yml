@@ -17,7 +17,7 @@ jobs:
     - name: Build Destination path
       run: |
         echo "BRANCH_NAME=$(echo ${{ github.event.pull_request.head.ref }} | sed -r 's#/+#-#g')" >> $GITHUB_ENV
-        echo "DESTINATION_PATH=${{github.event.repository.name}}/${env.BRANCH_NAME}/${{github.run_number}}" >> $GITHUB_ENV
+        echo "DESTINATION_PATH=${{github.event.repository.name}}/${{ env.BRANCH_NAME }}/${{github.run_number}}" >> $GITHUB_ENV
 
     - name: env vars in step name $GITHUB_REPOSITORY
       run: echo $GITHUB_REPOSITORY
