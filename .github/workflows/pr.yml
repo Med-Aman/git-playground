@@ -3,26 +3,32 @@ name: playground-foo
 on:
   pull_request:
     branches: ["**"]
+  push:
+    branches:
+    - master
 
 jobs:
   playground:
-    env:
-      DESTINATION_PATH: ${{github.event.repository.name}}/${{ github.event.pull_request.head.ref }}/${{github.run_number}}.zip
     runs-on: ubuntu-latest
     steps:
     - name: checkout
       uses: actions/checkout@v2
+
+    - name: Build Destination path
+      run: |
+        BRANCH_NAME=$(echo ${{ github.event.pull_request.head.ref }} | sed -r 's#/+#-#g')
+        echo "DESTINATION_PATH=${{github.event.repository.name}}/${BRANCH_NAME}/${{github.run_number}}" >> $GITHUB_ENV
 
     - name: env vars in step name $GITHUB_REPOSITORY
       run: echo $GITHUB_REPOSITORY
 
     - name: env vars in step name ${{ github.ref }}
       env:
-        GITHUB_REF_NEW: ${{ github.ref}}
-      run: echo $GITHUB_REF_NEW
+        GITHUB_REF: ${{ github.ref}}
+      run: echo $GITHUB_REF
 
     - name: Branch name
-      run: echo $GITHUB_REF
+      run: echo ${GITHUB_REF##*/}
 
     - name: Repo name
       run: echo ${{github.event.repository.name}}
@@ -31,7 +37,10 @@ jobs:
       run: echo ${{github.run_number}}
 
     - name: Branch name in raw form
-      run: echo ${{ github.event.pull_request.head.ref }}
+      run: echo ${{ github.ref_name }}
 
     - name: Build action artifacts folder name
       run: echo $DESTINATION_PATH
+
+    - name: Check pull request name
+      run: echo ${{ github.event.pull_request.head.ref }}

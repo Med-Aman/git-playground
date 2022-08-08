@@ -1,0 +1,23 @@
+name: Upload artifacts and deploy to lower environment
+
+on:
+  push:
+    branches: [master, production, try-and-test]
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set environment variable based on branch
+      run: |
+        if [[ ${{ github.ref_name}}  == 'production'  ]]
+        then
+           echo "API_SPEC_DESTINATION_PATH=abc.test.io" >> $GITHUB_ENV
+        else
+           echo "API_SPEC_DESTINATION_PATH=abc.dev-test.io" >> $GITHUB_ENV
+        fi
+
+    - name: check dest path
+      if: |
+        github.ref_name == 'master' || github.ref_name == 'production'
+      run: echo ${{ env.API_SPEC_DESTINATION_PATH }}
