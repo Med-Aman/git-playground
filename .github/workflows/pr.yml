@@ -44,3 +44,17 @@ jobs:
 
     - name: Check pull request name
       run: echo ${{ github.event.pull_request.head.ref }}
+
+    - name: Teemp check
+      if: ${{ env.BRANCH_NAME == 'try-and-test' }}
+      run: echo Success
+
+    - name: Temp check
+      if: ${{ env.BRANCH_NAME }} == 'try-and-test'
+      run: echo Success
+
+    - name: Echo branch name
+      run: echo $BRANCH_NAME
+
+    - name: Echo branch name
+      run: echo ${{ env.BRANCH_NAME }}
