@@ -18,4 +18,6 @@ jobs:
         fi
 
     - name: check dest path
+      if: |
+        github.ref_name == 'master' || github.ref_name == 'production'
       run: echo ${{ env.API_SPEC_DESTINATION_PATH }}
