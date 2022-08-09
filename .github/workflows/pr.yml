@@ -3,9 +3,6 @@ name: playground-foo
 on:
   pull_request:
     branches: ["**"]
-  push:
-    branches:
-    - master
 
 jobs:
   playground:
@@ -23,10 +20,8 @@ jobs:
     - name: env vars in step name $GITHUB_REPOSITORY
       run: echo $GITHUB_REPOSITORY
 
-    - name: env vars in step name ${{ github.ref }}
-      env:
-        GITHUB_REF: ${{ github.ref}}
-      run: echo $GITHUB_REF
+    - name: bracnh name on PR in step name ${{ github.ref }}
+      run: echo ${{ github.ref}}
 
     - name: Branch name
       run: echo ${GITHUB_REF##*/}
