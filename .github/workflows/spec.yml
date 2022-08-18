@@ -1,0 +1,2026 @@
+openapi: 3.1.0
+info:
+  title: Partners service
+  description: |
+    # Medly’s Partners APIs
+    ## Introduction
+    Welcome to Medly’s Partners API! Our Partner’s APIs provide detailed information on your patient’s entire prescription lifecycle, from receipt to delivery, thus allowing you to seamlessly utilize Medly services within your own products. These APIs empower our partners like you to deliver the finest patient experiences through Medly.
+
+    # API Overview
+    Medly’s Partners APIs are RESTful JSON-based APIs. These APIs give you access to our healthcare infrastructure, allowing your patients to see copayments, pay for prescriptions, see pharmacy locations, schedule deliveries, update patient information, get automatic updates on prescription statuses, and more.
+
+    ## Request Parameters
+    To access Medly's Partners APIs, you need a bearer access token. This token can be generated using the client ID and client secret provided to you during the <a href="#section/Onboarding">onboarding</a> process.
+
+    As per RESTful design patterns, Medly’s Partners API implements standard HTTP actions: GET, POST, PUT, DELETE. When making requests, arguments can be passed as parameters or JSON with the correct content-type header.
+
+    Requests must be made over HTTPS. Any non-secure requests are not redirected (HTTP 302) to the HTTPS equivalent URI.
+
+    ## Different Environments
+    We currently have two environments.
+    1. Sandbox
+      - Base URL: https://api.uat-medly.io/partners/
+      - Data: Sandbox has fake data.
+    2. Production
+      - Base URL: https://api.medly.io/partners/
+      - Data: Production will have real data.
+
+    # Onboarding
+    During the onboarding process, we give you access to Medly’s pharmacy services where a dedicated account manager provides API documentation and other onboarding-related documents.<br><br>
+    We start with onboarding your facility using:<br>
+    - Your facility address, which should contain the following fields:
+      1. Line1
+      2. Line2 (optional)
+      3. City
+      4. State
+      5. Zip code
+
+    - Your prescriber NPI number<br>
+
+    Following that, in order to acquire the **client ID** and **client secret**, you must provide a list of the Medly APIs you intend to utilize. We provide you with two sets of client IDs and client secret keys. One set is for the sandbox environment, while the other is for the production environment.<br><br>
+    For more information about onboarding, reach out to your assigned account manager
+
+  version: 0.0.1
+  x-logo:
+    #TODO -> change url of image
+    url: https://op3static.oktacdn.com/fs/bco/1/fs0xz0f1j590lM8Ve1d5
+    altText: Medly Pharmacy
+    href: "https://www.medly.com"
+servers:
+- url: https://api.medly.io/partners/
+  description: Production
+- url: https://api.uat-medly.io/partners/
+  description: Sandbox
+x-tagGroups:
+- name: token API
+  tags:
+  - token_api
+- name: Patient Record API
+  tags:
+  - patient_profile
+  - patient_additional_contact
+- name: Pharmacy Locations API
+  tags:
+  - get_locations
+- name: Prescriptions Status API
+  tags:
+  - get_prescriptions
+- name: Prescription Status Webhooks
+  tags:
+  - prescription_status_webhook
+
+tags:
+- name: prescription_status_webhook
+  x-displayName: Prescription Status Webhooks
+  description: |
+    Notifies you of any change in the prescription status of the patient.<br>
+    <br>As a Partner, you must provide the following details to enable webhook subscriptions:
+    - **Notification URL:** The URL of your server where Medly will send webhook POST requests.<br><br>
+    - **API Key:** The secret that is sent as a request header when Medly sends an event notification to the notification URL.<br>
+    <br>**Note:** The Rx Received webhook payload returns the Rx ID, which can be utilized by other Partner APIs.<br>
+    <br>**Additional information:**
+    <table style="width: 100%">
+        <colgroup>
+            <col width="30%" />
+            <col width="70%" />
+        </colgroup>
+        <thead>
+            <tr>
+                <th>Term</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+              <td>Prescription status types</td>
+              <td>
+                <ul>
+                    <li>Rx Received</li>
+                    <li>Prior Authorization (PA) In Progress</li>
+                    <li>PA Approved</li>
+                    <li>PA Canceled</li>
+                    <li>PA Denied</li>
+                    <li>Delivery Scheduled</li>
+                    <li>Delivery Started</li>
+                    <li>Delivery Successful</li>
+                    <li>Delivery Failed</li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <td>NDC</td>
+              <td>The National Drug Code (NDC) is a three-segment number that is used to identify and report drugs.</td>
+            </tr>
+            <tr>
+              <td>Diagnosis Code</td>
+              <td>A diagnosis code is a combination of letters and/or numbers assigned to a particular diagnosis, symptom, or procedure.</td>
+            </tr>
+            <tr>
+              <td>NPI</td>
+              <td>A National Provider Identifier (NPI) is a unique 10-digit identification number issued to health care providers in the United States.</td>
+            </tr>
+            <tr>
+              <td>PCN</td>
+              <td>A Processor Control Number (PCN) is a secondary number on a health insurance card that is used to route pharmacy claim transactions for health insurers.</td>
+            </tr>
+            <tr>
+              <td>NABP</td>
+              <td>National Boards of Pharmacy (NABP) number is the unique identification number assigned to each pharmacy.</td>
+            </tr>
+            <tr>
+              <td>Rx BIN</td>
+              <td>The Rx BIN number is a 6-digit number health plans use to process electronic pharmacy claims.</td>
+            </tr>
+            <tr>
+              <td>Provider</td>
+              <td>A provider is a healthcare professional or entity that provides medical care or treatment.<br>
+                  Example: Doctors, nurse practitioners, midwives, radiologists, labs, hospitals, urgent care clinics, medical supply companies, etc.
+              </td>
+            </tr>
+            <tr>
+              <td>Prescriber</td>
+              <td>Prescriber is a person authorized by law to prescribe drugs.<br>
+                  Example: Doctors, physicians, etc.
+              </td>
+            </tr>
+        </tbody>
+    </table>
+
+- name: token_api
+  x-displayName: Token
+  description: |
+    Generates access tokens.
+
+    Use the client ID and client secret received during <a href="#section/Onboarding">onboarding</a> to build the authorization header in the request. The provided token is valid for 30 minutes.
+- name: get_prescriptions
+  x-displayName: Prescriptions Status API
+  description: |
+    Allows you to retrieve prescription information using prescription ID or patient profile ID.
+
+    Please contact your account manager if you have any questions regarding prescription details or its status beyond what is available through this API.
+
+- name: get_locations
+  x-displayName: Pharmacy Locations API
+  description: |
+    Enables patients to seamlessly choose Medly as their desired pharmacy.
+
+- name: patient_profile
+  x-displayName: Patient Record
+  description: |
+    Allows you to create, update and manage a patient record in the Medly database.
+
+- name: patient_additional_contact
+  x-displayName: Patient Additional Contact
+  description: |
+    Allows you to create, update, or delete additional contacts for a patient record in the Medly database. **Additional contact** includes contact details (such as mobile number, fax, email ID, etc.) of the patient's guardian, such as a caretaker, mother, father, sibling, etc.
+
+webhooks:
+  RX RECEIVED:
+    post:
+      summary: RX RECEIVED
+      description: Indicates that a prescription has been received and mapped to the partner. The Rx Received webhook payload returns the Rx ID, which can be utilized by other Partner APIs.
+      tags:
+      - prescription_status_webhook
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RxReceivedWebhookPayload"
+      security:
+      - ApiKeyAuth: [ ]
+  PA IN PROGRESS:
+    post:
+      summary: PA IN PROGRESS
+      description: Indicates that Prior Authorization is still in progress.
+      tags:
+      - prescription_status_webhook
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: "#/components/schemas/PrescriptionStatusWebhookPayload"
+              type: object
+              properties:
+                entity:
+                  type: string
+                  default: prescription:pa_in_progress
+      security:
+      - ApiKeyAuth: [ ]
+  PA APPROVED:
+    post:
+      summary: PA APPROVED
+      description: Indicates that the insurance company has approved the Prior Authorization.
+      tags:
+      - prescription_status_webhook
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: "#/components/schemas/PrescriptionStatusWebhookPayload"
+              type: object
+              properties:
+                entity:
+                  type: string
+                  default: prescription:pa_approved
+      security:
+      - ApiKeyAuth: [ ]
+  PA CANCELED:
+    post:
+      summary: PA CANCELED
+      description: Indicates that Prior Authorization has been canceled.
+      tags:
+      - prescription_status_webhook
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: "#/components/schemas/PrescriptionStatusWebhookPayload"
+              type: object
+              properties:
+                entity:
+                  type: string
+                  default: prescription:pa_canceled
+      security:
+      - ApiKeyAuth: [ ]
+  PA DENIED:
+    post:
+      summary: PA DENIED
+      description: Indicates that the insurance company has denied Prior Authorization.
+      tags:
+      - prescription_status_webhook
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: "#/components/schemas/PrescriptionStatusWebhookPayload"
+              type: object
+              properties:
+                entity:
+                  type: string
+                  default: prescription:pa_denied
+      security:
+      - ApiKeyAuth: [ ]
+  DELIVERY SCHEDULED:
+    post:
+      summary: DELIVERY SCHEDULED
+      description: |
+        Indicates that the prescription is scheduled for delivery.
+      tags:
+      - prescription_status_webhook
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: "#/components/schemas/PrescriptionDeliveryStatusWebhookPayload"
+              type: object
+              properties:
+                entity:
+                  type: string
+                  default: prescription:delivery_scheduled
+      security:
+      - ApiKeyAuth: [ ]
+  DELIVERY STARTED:
+    post:
+      summary: DELIVERY STARTED
+      description: |
+        Indicates that the prescription delivery has started.
+      tags:
+      - prescription_status_webhook
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: "#/components/schemas/PrescriptionStatusWebhookPayload"
+              type: object
+              properties:
+                entity:
+                  type: string
+                  default: prescription:delivery_started
+      security:
+      - ApiKeyAuth: [ ]
+  DELIVERY SUCCESSFUL:
+    post:
+      summary: DELIVERY SUCCESSFUL
+      description: |
+        Indicates that the prescription was successfully delivered.
+      tags:
+      - prescription_status_webhook
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PrescriptionDeliveryStatusWebhookPayload"
+              type: object
+              properties:
+                entity:
+                  type: string
+                  default: prescription:delivery_successful
+                payload:
+                  type: object
+                  description: Prescription details
+                  properties:
+                    metadata:
+                      type: object
+                      description: Additional details about the prescription status
+                      properties:
+                        deliveryDetails:
+                          type: object
+                          description: Prescription delivery details
+                          properties:
+                            completedAt:
+                              type: string
+                              description: |
+                                Timestamp (date and time) of delivery completion<br>
+                                ISO 8601 format<br>
+                                Example: 2020-07-10 15:00:00.000
+      security:
+      - ApiKeyAuth: [ ]
+  DELIVERY FAILED:
+    post:
+      summary: DELIVERY FAILED
+      description: |
+        Indicates that the prescription delivery has failed due to unforeseen circumstances such as location not found, patient not available, etc.
+      tags:
+      - prescription_status_webhook
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: "#/components/schemas/PrescriptionStatusWebhookPayload"
+              type: object
+              properties:
+                entity:
+                  type: string
+                  default: prescription:delivery_failed
+      security:
+      - ApiKeyAuth: [ ]
+
+paths:
+  /token:
+    get:
+      tags:
+      - token_api
+      summary: Token Generate
+      description: |
+        Create authorization value using a client ID and client secret.
+
+        Authorization Basic <Base64 encoded $clientID:$clientSecret>
+      parameters:
+      - name: Authorization
+        description: Basic <Base64 encoded $clientID:$clientSecret>
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Token generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        404:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        500:
+          description: Internal Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /prescriptions/{id}:
+    get:
+      tags:
+      - get_prescriptions
+      summary: Retrieve a Single Prescription
+      description: |
+        Returns information about a single prescription for the specified prescription ID.
+
+        You can get the prescription ID from the <a href="#tag/prescription_status_webhook/paths/RX%20RECEIVED/post">Rx RECEIVED</a> webhook payload.
+      parameters:
+      - name: id
+        description: Unique prescription identifier
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: Prescription information for the specified prescription ID.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Prescription"
+        401:
+          description: Unauthorized (Incorrect client credentials)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        403:
+          description: Not allowed to access this prescription
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        404:
+          description: Prescription not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        500:
+          description: Internal Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+      - BearerAuth: [ ]
+  /prescriptions/patient-profile-id/{patient-profile-id}:
+    get:
+      tags:
+      - get_prescriptions
+      summary: Retrieve a List of Prescriptions
+      description: |
+        Returns a list of prescriptions for the specified patient profile ID.
+
+        You can get the patient profile ID from the <a href="#tag/patient_profile/paths/~1patient/post">Create New Patient Record</a> response.
+      parameters:
+      - name: patient-profile-id
+        in: path
+        required: true
+        description: Unique patient identifier assigned by Medly
+        schema:
+          type: integer
+          format: int64
+      - name: from-date
+        in: query
+        description: |
+          Timestamp (date and time) from when the prescriptions must be retrieved<br>
+          (YYYY-MM-DDTHH:MM:SS.000Z)<br>
+          Example: 2020-11-16T00:00:00Z
+        required: false
+        schema:
+          type: string
+          nullable: true
+          default: 7 days before the current date timestamp
+      - name: to-date
+        in: query
+        description: |
+          Timestamp (date and time) from when the prescriptions must be retrieved<br>
+          (YYYY-MM-DDTHH:MM:SS.000Z)<br>
+          Example: 2020-11-16T00:00:00Z
+        required: false
+        schema:
+          type: string
+          nullable: true
+          default: Current date timestamp
+      - name: page
+        in: query
+        description: The current page number from which prescriptions must be retrieved when paginating
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: limit
+        in: query
+        description: The maximum number of prescription records to be returned on the current page when paginating
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        200:
+          description: Information about the prescriptions for the specified patient profile ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedPrescriptionResponse"
+        400:
+          description: Bad Request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        401:
+          description: Unauthorized (Incorrect client credentials)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        500:
+          description: Internal Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+      - BearerAuth: [ ]
+  /locations/zips/{zip_code}/pharmacy:
+    get:
+      tags:
+      - get_locations
+      summary: Search Pharmacy by Zip Code
+      description: |
+        Searches for Medly pharmacies in a specified zip code.
+
+        Upon a successful request, the endpoint returns details about the Medly pharmacy (such as pharmacy name, pharmacy location, NPI of the pharmacy, and hours of operation) present in the specified zip code.
+
+      parameters:
+      - name: zip_code
+        description: |
+          The US zip code where a patient chooses to find a Medly pharmacy<br>
+          Example: 90210
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Information about the Medly pharmacy located at the specified zip code.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pharmacy'
+        404:
+          description: No Medly pharmacy is present in the specified zip code.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Internal Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - BearerAuth: [ ]
+  /patient:
+    post:
+      tags:
+      - patient_profile
+      summary: Create New Patient Record
+      description: |
+        Creates a new patient record in the Medly database.<br><br>**If the patient information does not match any patient record in our database (upon a successful request):** The endpoint returns a unique Medly ID that may be used for making other API calls.<br><br>**If the patient information matches the patient record in our database:** The endpoint returns the Medly ID of the existing patient.<br>
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePatientProfileRequest'
+      responses:
+        201:
+          description: Patient record created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatePatientProfileSuccess'
+        404:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized (Incorrect client credentials)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        500:
+          description: Internal Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - BearerAuth: [ ]
+  /patient/{id}:
+    get:
+      tags:
+      - patient_profile
+      summary: Get a Patient Record
+      description: Returns patient information.<br><br>Once a patient record has been created in the Medly database, you can access the patient information at any time using the Medly ID that was provided on the <a href="#tag/patient_profile/paths/~1patient/post">Create New Patient Record</a> response.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+          description: Unique patient identifier assigned by Medly
+      responses:
+        200:
+          description: Information about the patient indicated by the given id.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetPatientProfileResponse"
+        401:
+          description: Unauthorized (Incorrect client credentials)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        403:
+          description: Not allowed to access this patient
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        404:
+          description: Patient not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        500:
+          description: Internal Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+      - BearerAuth: [ ]
+    patch:
+      tags:
+      - patient_profile
+      summary: Update a Patient Record
+      description: Updates patient information in the Medly database.<br><br>You can update the patient information (except the delivery address) at any time using the Medly ID that was provided on the <a href="#tag/patient_profile/paths/~1patient/post">Create New Patient Record</a> response.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+          description: Unique patient identifier assigned by Medly
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatientProfilePatchRequest'
+      responses:
+        200:
+          description: Patient profile updated
+        401:
+          description: Unauthorized (Incorrect client credentials)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        403:
+          description: Not allowed to access this patient
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        404:
+          description: Patient not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        500:
+          description: Internal Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+      - BearerAuth: [ ]
+  /patient/{id}/delivery-address:
+    put:
+      tags:
+      - patient_profile
+      summary: Update the Delivery Address
+      description: Updates the delivery address of a patient.<br><br>You can update the delivery address of the patient at any time using the Medly ID that was provided on the <a href="#tag/patient_profile/paths/~1patient/post">Create New Patient Record</a> response.<br><br>This endpoint creates a new delivery address only if no delivery address is found for the specified Medly ID.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+          description: Unique patient identifier assigned by Medly
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryAddress'
+      responses:
+        200:
+          description: Delivery address updated
+        401:
+          description: Unauthorized (Incorrect client credentials)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        403:
+          description: Not allowed to access this patient
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        404:
+          description: Patient not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        500:
+          description: Internal Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+      - BearerAuth: [ ]
+  /patient/{patient-id}/additional-contact:
+    post:
+      tags:
+      - patient_additional_contact
+      summary: Create an Additional Contact
+      description: Creates an additional contact for a patient record in the Medly database.<br><br>Upon a successful request, the endpoint returns a unique **Additional Contact ID** for you to reference in subsequent API requests that require this field.<br><br>For each patient record, you can add up to three additional contacts.
+      parameters:
+      - name: patient-id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+          description: Unique patient identifier assigned by Medly
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdditionalContact'
+      responses:
+        201:
+          description: Additional contact created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateAdditionalContactSuccess'
+        401:
+          description: Unauthorized (Incorrect client credentials)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        403:
+          description: Not allowed to access this patient
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        404:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Internal Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - BearerAuth: [ ]
+  /patient/{patient-id}/additional-contact/{additional-contact-id}:
+    put:
+      tags:
+      - patient_additional_contact
+      summary: Update an Additional Contact
+      description: Updates the details of a patient’s additional contact.<br><br>You can update the information of any additional contact at any time using the **Additional Contact ID** that was provided on the <a href="#tag/patient_additional_contact/paths/~1patient~1{patient-id}~1additional-contact/post">Create an Additional Contact</a> response.
+      parameters:
+      - name: patient-id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+          description: Unique patient identifier assigned by Medly
+      - name: additional-contact-id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+          description: Unique identifier for additional contact assigned by Medly
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdditionalContact'
+      responses:
+        200:
+          description: Additional contact updated
+        401:
+          description: Unauthorized (Incorrect client credentials)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        403:
+          description: Not allowed to access this patient
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        404:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Internal Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        security:
+        - BearerAuth: [ ]
+      security:
+      - BearerAuth: [ ]
+    delete:
+      tags:
+      - patient_additional_contact
+      summary: Delete an Additional Contact
+      description: Deletes a specific additional contact from the patient record.<br><br>You can delete the information of any additional contact at any time using the **Additional Contact ID** that was provided on the <a href="#tag/patient_additional_contact/paths/~1patient~1{patient-id}~1additional-contact/post">Create an Additional Contact</a> response.
+      parameters:
+      - name: patient-id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+          description: Unique patient identifier assigned by Medly
+      - name: additional-contact-id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+          description: Unique identifier for additional contact assigned by Medly
+      responses:
+        200:
+          description: Additional contact deleted
+        401:
+          description: Unauthorized (Incorrect client credentials)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        403:
+          description: Not allowed to access this patient
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        404:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Internal Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - BearerAuth: [ ]
+
+components:
+  schemas:
+    TokenResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          nullable: false
+          example: "<ACCESS TOKEN VALUE>"
+    Address:
+      type: object
+      description: Patient’s address
+      properties:
+        addressLine1:
+          type: string
+          description: Line 1 of address
+        addressLine2:
+          type: string
+          nullable: true
+          description: Line 2 of address (if applicable)
+        city:
+          type: string
+          description: The address city
+        state:
+          type: string
+          description: The address state
+        zipCode:
+          type: string
+          description: The address zip/postal code
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+    PrescriptionStatus:
+      type: string
+      nullable: true
+      description: Current prescription status
+      enum:
+      - RX_RECEIVED
+      - PA_IN_PROGRESS
+      - PA_APPROVED
+      - PA_CANCELED
+      - PA_DENIED
+      - DELIVERY_SCHEDULED
+      - DELIVERY_STARTED
+      - DELIVERY_SUCCESSFUL
+      - DELIVERY_FAILED
+    Facility:
+      type: object
+      description: A facility can either be a private practice, clinic, hospital, health center, or telehealth partner.
+      properties:
+        id:
+          type: integer
+          format: int32
+        name:
+          type: string
+          nullable: true
+        npi:
+          type: string
+          nullable: true
+        address:
+          $ref: "#/components/schemas/Address"
+    Insurance:
+      type: object
+      description: Insurance details of the patient
+      properties:
+        id:
+          type: string
+          nullable: true
+          description: Member ID of the patient
+        name:
+          type: string
+          nullable: true
+          description: Insurance carrier name
+        bin:
+          type: string
+          nullable: true
+          description: |
+            Rx BIN number<br>
+            Example: 610502
+        pcn:
+          type: string
+          nullable: true
+          description: |
+            Processor Control Number of the insurer<br>
+            Example: 02050000
+        groupNo:
+          type: string
+          nullable: true
+          description: Insurance group number
+    Patient:
+      type: object
+      description: Patient details
+      properties:
+        firstName:
+          type: string
+          description: Patient's legal first name
+        lastName:
+          type: string
+          description: Patient’s legal last name
+        address:
+          $ref: "#/components/schemas/Address"
+        dob:
+          type: string
+          format: date
+          description: |
+            Patient’s legal date of birth<br>
+            yyyy-mm-dd
+        email:
+          type: string
+          nullable: true
+          description: Patient’s email address
+        insurance:
+          $ref: "#/components/schemas/Insurance"
+        phone:
+          type: string
+          description: Patient’s phone number
+        gender:
+          type: string
+          description: Patient’s gender
+    Prescriber:
+      type: object
+      description: Prescriber details
+      properties:
+        firstName:
+          type: string
+          description: Prescriber’s first name
+        lastName:
+          type: string
+          description: Prescriber’s last name
+        address:
+          $ref: "#/components/schemas/Address"
+          description: Address of the prescribing clinic
+        email:
+          type: string
+          nullable: true
+          description: Prescriber’s email address
+        phone:
+          type: string
+          nullable: true
+          description: Prescriber’s (clinic) landline number (often partner phone number)
+        npi:
+          type: string
+          description: |
+            Prescriber’s National Provider Identifier<br>
+            Example: 1346336807
+    MetaData:
+      required:
+      - totalCount
+      type: object
+      properties:
+        totalCount:
+          type: integer
+          format: int32
+          description: Total number of prescriptions for the specified patient profile ID
+    PaginatedPrescriptionResponse:
+      required:
+      - metaData
+      - prescriptions
+      type: object
+      properties:
+        metaData:
+          description: Prescription details
+          $ref: '#/components/schemas/MetaData'
+        prescriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Prescription'
+    Prescription:
+      type: object
+      required:
+      - id
+      - rxNumber
+      - refillNumber
+      - refills
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique prescription identifier
+        rxNumber:
+          description: Prescription number
+          type: string
+        refillNumber:
+          description: Number of times the drug has been filled
+          type: integer
+          format: int32
+        refills:
+          description: The number of times the prescribed drug can be refilled
+          type: integer
+          format: int32
+        quantity:
+          type: number
+          format: double
+          nullable: true
+          description: Drug quantity
+        daySupply:
+          type: integer
+          format: int32
+          nullable: true
+          description: The number of days this prescription is intended to last
+        diagnosisCode:
+          type: string
+          nullable: true
+          description: |
+            Specific diagnosis code<br>
+            Example: G44.311
+        drugName:
+          type: string
+          description: Name of the drug
+        status:
+          $ref: "#/components/schemas/PrescriptionStatus"
+          description: Current prescription status
+        dosage:
+          type: string
+          description: |
+            The unit of drug strength<br>
+            Example: 250 mg, 10 mL
+          nullable: true
+        copay:
+          type: number
+          description: The claim amount that the policyholder has to pay from their own pocket under a health insurance policy
+          format: double
+          nullable: true
+        lastUpdated:
+          description: |
+            Timestamp (date and time) when the prescription was last updated<br>
+            ISO 8601 format<br>
+            Example: 2020-07-10 15:00:00.000
+          type: string
+          format: datetime
+        patient:
+          $ref: "#/components/schemas/Patient"
+        prescriber:
+          $ref: "#/components/schemas/Prescriber"
+    Hours:
+      type: object
+      nullable: true
+      example:
+        open: "9am"
+        close: "5pm"
+      properties:
+        open:
+          type: string
+          description: |
+            Opening hour of Medly Pharmacy<br>
+            Expressed in a 12-hour format<br>
+            Example: 9am
+        close:
+          type: string
+          description: |
+            Closing hour of Medly Pharmacy<br>
+            Expressed in a 12-hour format<br>
+            Example: 5pm
+    Pharmacy:
+      required:
+      - name
+      - address
+      - nabp
+      type: object
+      properties:
+        name:
+          type: string
+          description: |
+            Name of the Medly pharmacy<br>
+            Example: Medly Miami
+        address:
+          $ref: '#/components/schemas/Address'
+          description: Address of the Medly pharmacy
+        nabp:
+          type: integer
+          format: int64
+          description: |
+            National Provider Identifier of the Medly pharmacy<br>
+            Example: 1346336807
+        hours:
+          type: object
+          nullable: true
+          description: |
+            Medly Pharmacy’s business hours<br>
+            Example: 9am to 5pm, Monday to Sunday
+          properties:
+            monday:
+              $ref: "#/components/schemas/Hours"
+            tuesday:
+              $ref: "#/components/schemas/Hours"
+            wednesday:
+              $ref: "#/components/schemas/Hours"
+            thursday:
+              $ref: "#/components/schemas/Hours"
+            friday:
+              $ref: "#/components/schemas/Hours"
+            saturday:
+              $ref: "#/components/schemas/Hours"
+            sunday:
+              $ref: "#/components/schemas/Hours"
+    CreatePatientProfileSuccess:
+      type: object
+      properties:
+        patientId:
+          description: Unique patient identifier assigned by Medly
+          type: integer
+          format: int64
+    CreatePatientProfileRequest:
+      required:
+      - basicProfile
+      type: object
+      properties:
+        basicProfile:
+          $ref: '#/components/schemas/BasicProfile'
+        genderProfile:
+          $ref: '#/components/schemas/GenderProfile'
+        addressProfile:
+          $ref: '#/components/schemas/AddressProfile'
+        preferences:
+          $ref: '#/components/schemas/Preferences'
+        allergies:
+          type: array
+          nullable: true
+          description: Allergies that the patient may have
+          items:
+            type: string
+    BasicProfile:
+      required:
+      - firstName
+      - lastName
+      - dob
+      - mobile
+      - zipcode
+      type: object
+      description: Patient’s basic details
+      properties:
+        firstName:
+          type: string
+          nullable: false
+          description: Patient's legal first name
+        lastName:
+          type: string
+          nullable: false
+          description: Patient’s legal last name
+        dob:
+          type: string
+          description: |
+            Patient’s legal date of birth<br>
+            YYYY-MM-DD<br>
+            Example: 2020-11-16
+          nullable: false
+        mobile:
+          type: string
+          description: Patient’s mobile number
+          nullable: false
+        zipcode:
+          type: string
+          description: The address zip/postal code
+          nullable: false
+        email:
+          type: string
+          nullable: false
+          description: Patient’s email address
+    GenderProfile:
+      type: object
+      description: Patient’s gender details
+      properties:
+        gender:
+          type: string
+          nullable: true
+          description: Gender that the patient identifies with
+          enum:
+          - MALE
+          - FEMALE
+          - DECLINE
+          - OTHER
+          - TRANSGENDER_MALE
+          - TRANSGENDER_FEMALE
+          - QUEER
+        sexAtBirth:
+          type: string
+          nullable: true
+          description: Patient’s assigned gender at birth
+          enum:
+          - MALE
+          - FEMALE
+          - DECLINE
+          - OTHER
+    AddressProfile:
+      type: object
+      description: Patient's address details
+      properties:
+        deliveryAddress:
+          $ref: '#/components/schemas/DeliveryAddress'
+        billingAddress:
+          $ref: '#/components/schemas/BillingAddress'
+    DeliveryAddress:
+      required:
+      - city
+      - firstName
+      - lastName
+      - line1
+      - state
+      - zipcode
+      - type
+      type: object
+      description: Prescription delivery address
+      properties:
+        line1:
+          type: string
+          nullable: false
+          description: Line 1 of address
+        line2:
+          type: string
+          nullable: false
+          description: Line 2 of address (if applicable)
+        city:
+          type: string
+          nullable: false
+          description: The address city
+        state:
+          type: string
+          nullable: false
+          description: The address state
+        zipcode:
+          type: string
+          nullable: false
+          description: The address zip/postal code
+        type:
+          type: string
+          nullable: false
+          description: The address type
+          enum:
+          - HOME
+          - WORK
+          - OTHER
+        customType:
+          type: string
+          nullable: true
+          description: |
+            Address type other than "HOME" "WORK"<br>
+            Example: Hotel, School, etc.
+        firstName:
+          type: string
+          nullable: false
+          description: First name of the person receiving the delivery
+        lastName:
+          type: string
+          nullable: false
+          description: Last name of the person receiving the delivery
+    BillingAddress:
+      type: object
+      description: Patient's billing address
+      properties:
+        line1:
+          type: string
+          nullable: true
+          description: Line 1 of address
+        line2:
+          type: string
+          nullable: true
+          description: Line 2 of address (if applicable)
+        city:
+          type: string
+          nullable: true
+          description: The address city
+        state:
+          type: string
+          nullable: true
+          description: The address state
+        zipcode:
+          type: string
+          nullable: true
+          description: The address zip/postal code
+    Preferences:
+      type: object
+      description: Patient’s preference details
+      properties:
+        preferredName:
+          type: string
+          nullable: true
+          description: Patient’s preferred name
+        preferredLanguage:
+          type: string
+          nullable: true
+          description: Patient’s preferred language
+        preferredPronouns:
+          type: string
+          nullable: true
+          description: |
+            Pronoun that the patient prefers to be associated with<br>
+            Example: she/her/hers, he/him/his
+    GetPatientProfileResponse:
+      type: object
+      required:
+      - basicProfile
+      description: Patient’s details
+      properties:
+        basicProfile:
+          $ref: '#/components/schemas/BasicProfileResponse'
+        genderProfile:
+          $ref: '#/components/schemas/GenderProfile'
+        addressProfile:
+          $ref: '#/components/schemas/AddressProfileResponse'
+        preferences:
+          $ref: '#/components/schemas/Preferences'
+        allergies:
+          type: array
+          nullable: true
+          description: Allergies that the patient may have
+          items:
+            type: string
+        additionalContacts:
+          type: array
+          nullable: true
+          description: Additional contact details specified by the patient
+          items:
+            $ref: '#/components/schemas/AdditionalContactResponse'
+    BasicProfileResponse:
+      type: object
+      description: Patient’s details
+      required:
+      - firstName
+      - lastName
+      - dob
+      - mobile
+      properties:
+        firstName:
+          type: string
+          nullable: false
+          description: Patient's legal first name
+        lastName:
+          type: string
+          nullable: false
+          description: Patient's legal last name
+        dob:
+          type: string
+          description: |
+            Patient’s legal date of birth<br>
+            YYYY-MM-DD<br>
+            Example: 2020-11-16
+          nullable: false
+        mobile:
+          type: string
+          nullable: false
+          description: Patient’s mobile number
+        email:
+          type: string
+          nullable: false
+          description: Patient’s email address
+    AddressProfileResponse:
+      type: object
+      description: Patient's address details
+      properties:
+        deliveryAddress:
+          nullable: true
+          $ref: '#/components/schemas/DeliveryAddressResponse'
+        billingAddress:
+          nullable: true
+          $ref: '#/components/schemas/BillingAddress'
+    DeliveryAddressResponse:
+      type: object
+      description: Prescription delivery address
+      required:
+      - id
+      - line1
+      - city
+      - state
+      - zipcode
+      - type
+      - firstName
+      - lastName
+      properties:
+        id:
+          type: integer
+          format: int64
+          nullable: false
+          description: Unique patient identifier assigned by Medly
+        line1:
+          type: string
+          nullable: false
+          description: Line 1 of address
+        line2:
+          type: string
+          nullable: false
+          description: Line 2 of address (if applicable)
+        city:
+          type: string
+          nullable: false
+          description: The address city
+        state:
+          type: string
+          nullable: false
+          description: The address state
+        zipcode:
+          type: string
+          nullable: false
+          description: The address zip/postal code
+        type:
+          type: string
+          nullable: true
+          description: The address type
+          enum:
+          - HOME
+          - WORK
+          - OTHER
+        customType:
+          type: string
+          nullable: true
+          description: |
+            Address type other than "HOME" "WORK"<br>
+            Example: Hotel, School, etc.
+        firstName:
+          type: string
+          nullable: false
+          description: First name of the person receiving the delivery
+        lastName:
+          type: string
+          nullable: false
+          description: Last name of the person receiving the delivery
+    AdditionalContactResponse:
+      type: object
+      required:
+      - id
+      - email
+      - mobile
+      - type
+      - firstName
+      - lastName
+      properties:
+        id:
+          type: integer
+          format: int64
+          nullable: false
+          description: Unique identifier for additional contact assigned by Medly
+        email:
+          type: string
+          nullable: false
+          description: Email address of the additional contact
+        mobile:
+          type: string
+          nullable: false
+          description: Mobile number of the additional contact
+        phoneNumber:
+          type: string
+          nullable: true
+          description: Landline number of the additional contact
+        type:
+          type: string
+          nullable: true
+          description: Patient's relationship with the additional contact
+          enum:
+          - SELF
+          - CARETAKER
+          - MOTHER
+          - FATHER
+          - SIBLING
+          - OTHER
+        customType:
+          type: string
+          nullable: true
+          description: |
+            Additional contact type other than "SELF", "CARETAKER", "MOTHER", "FATHER", "SIBLING"<br>
+            Example: Friend, Colleague, etc.
+        firstName:
+          type: string
+          nullable: false
+          description: First name of the additional contact
+        lastName:
+          type: string
+          nullable: false
+          description: Last name of the additional contact
+        isPrimary:
+          type: boolean
+          nullable: true
+          description: True if the additional contact is primary; False otherwise
+    PatientProfilePatchRequest:
+      type: object
+      properties:
+        basicProfile:
+          $ref: '#/components/schemas/BasicProfilePatchRequest'
+        genderProfile:
+          $ref: '#/components/schemas/GenderProfile'
+        billingAddress:
+          $ref: '#/components/schemas/BillingAddress'
+        preferences:
+          $ref: '#/components/schemas/Preferences'
+        allergies:
+          type: array
+          nullable: true
+          description: Allergies that the patient may have
+          items:
+            type: string
+    BasicProfilePatchRequest:
+      type: object
+      description: Patient details
+      properties:
+        firstName:
+          type: string
+          nullable: true
+          description: Patient's legal first name
+        lastName:
+          type: string
+          nullable: true
+          description: Patient’s legal last name
+        dob:
+          type: string
+          description: |
+            Patient’s legal date of birth<br>
+            YYYY-MM-DD<br>Example: 2020-11-16
+          nullable: true
+        mobile:
+          type: string
+          nullable: true
+          description: Patient’s mobile number
+        email:
+          type: string
+          nullable: true
+          description: Patient’s email address
+    CreateAdditionalContactSuccess:
+      type: object
+      properties:
+        additionalContactId:
+          description: Unique identifier for additional contact assigned by Medly
+          type: integer
+          format: int64
+    AdditionalContact:
+      type: object
+      required:
+      - email
+      - firstName
+      - lastName
+      - mobile
+      - type
+      - isPrimary
+      properties:
+        firstName:
+          type: string
+          nullable: false
+          description: First name of the additional contact
+        lastName:
+          type: string
+          nullable: false
+          description: Last name of the additional contact
+        email:
+          type: string
+          nullable: false
+          description: Email address of additional contact
+        mobile:
+          type: string
+          nullable: false
+          description: Mobile number of additional contact
+        phoneNumber:
+          type: string
+          nullable: true
+          description: Landine number of additional contact
+        type:
+          type: string
+          nullable: false
+          description: Patient's relationship with the additional contact
+          enum:
+          - SELF
+          - CARETAKER
+          - MOTHER
+          - FATHER
+          - SIBLING
+          - OTHER
+        customType:
+          type: string
+          nullable: true
+          description: |
+            Additional contact type other than "SELF", "CARETAKER", "MOTHER", "FATHER", "SIBLING"<br>
+            Example: Friend, Colleague, etc.
+        isPrimary:
+          type: boolean
+          nullable: false
+          description: True if the additional contact is primary; False otherwise
+    AddressPayload:
+      type: object
+      description: Address details
+      properties:
+        line1:
+          type: string
+          description: Line 1 of address
+          nullable: true
+        line2:
+          type: string
+          description: Line 2 of address (if applicable)
+          nullable: true
+        city:
+          type: string
+          description: The address city
+          nullable: true
+        state:
+          type: string
+          description: The address state
+          nullable: true
+        zipcode:
+          type: string
+          description: The address zip/postal code
+          nullable: true
+    PrescriberPayload:
+      description: Prescriber details
+      properties:
+        npi:
+          type: string
+          description: |
+            Prescriber’s National Provider Identifier<br>
+            Example: 1346336807
+        firstName:
+          type: string
+          description: Prescriber’s first name
+        lastName:
+          type: string
+          description: Prescriber’s last name
+        mobile:
+          type: string
+          description: Prescriber’s mobile number
+          nullable: true
+        telephone:
+          type: string
+          nullable: true
+          description: Prescriber’s (clinic) landline number (often partner phone number)
+        email:
+          type: string
+          nullable: true
+          description: Prescriber’s email address
+        faxNo:
+          type: string
+          description: Prescriber’s fax number
+        address:
+          $ref: "#/components/schemas/AddressPayload"
+          description: Address where provider is sending eRx from
+    InsurancePayload:
+      allOf:
+      - $ref: '#/components/schemas/Insurance'
+      type: object
+      properties:
+        type:
+          type: string
+          description: |
+            Type of the insurance plan<br>
+            Example: Commercial, Medicaid, etc.
+          nullable: true
+    PatientPayload:
+      type: object
+      description: Patient details
+      properties:
+        firstName:
+          type: string
+          description: Patient's legal first name
+        lastName:
+          type: string
+          description: Patient’s legal last name
+        dob:
+          type: string
+          format: date
+          description: Patient’s legal date of birth
+            <br>yyyy-mm-dd
+        gender:
+          type: string
+          description: Patient’s gender
+        email:
+          type: string
+          nullable: true
+          description: Patient’s email address
+        mobile:
+          type: string
+          nullable: true
+          description: Patient’s mobile number
+        telephone:
+          type: string
+          description: Patient’s landline number
+          nullable: true
+        address:
+          $ref: '#/components/schemas/AddressPayload'
+        mmsId:
+          type: integer
+          format: int64
+          description: Unique patient identifier for the given pharmacy
+        profileId:
+          type: integer
+          format: int64
+          description: Unique patient identifier assigned by Medly
+          nullable: true
+    WebhookPayload:
+      type: object
+      properties:
+        entity:
+          type: string
+          description: Type of prescription status
+        notificationId:
+          type: string
+          description: A unique identifier for each webhook notification
+        payload:
+          type: object
+          description: Prescription details
+    RxReceivedWebhookPayload:
+      allOf:
+      - $ref: '#/components/schemas/WebhookPayload'
+      type: object
+      properties:
+        entity:
+          type: string
+          default: prescription:rx_received
+        payload:
+          type: object
+          properties:
+            id:
+              description: "Unique prescription identifier"
+              type: integer
+              format: int64
+            rxNo:
+              description: "Prescription number"
+              type: string
+            createdTimestamp:
+              description: |
+                Prescription creation date and time<br>
+                (YYYY-MM-DDTHH:MM:SS.000Z)<br>
+                Example: 2020-11-16T13:00:00Z
+              type: string
+            drugName:
+              description: "Name of the drug"
+              type: string
+            copay:
+              description: "The claim amount that the policyholder has to pay from their own pocket under a health insurance policy"
+              type: number
+              format: double
+              nullable: true
+            amount:
+              description: "Drug price"
+              type: number
+              format: double
+              nullable: true
+            ndc:
+              description: |
+                NDC of the prescribed drug<br>
+                Example: 0777-3105-02
+              type: string
+            quantity:
+              description: "Drug quantity"
+              type: number
+              format: double
+              nullable: true
+            fillNumber:
+              description: "Number of times the drug has been filled"
+              type: integer
+              format: int32
+            refills:
+              description: "The number of times the prescribed drug can be refilled"
+              type: integer
+              format: int32
+            direction:
+              description: "Usage directions for the prescribed drug"
+              type: string
+              nullable: true
+            dosage:
+              description: |
+                The unit of drug strength<br>
+                Example: 250 mg, 10 mL
+              type: string
+              nullable: true
+            daySupply:
+              description: "The number of days this prescription is intended to last"
+              type: integer
+              format: int32
+              nullable: true
+            discount:
+              description: "The amount of discount given off the drug retail price"
+              type: number
+              format: double
+              nullable: true
+            drugForm:
+              description: |
+                Form of the prescribed drug<br>
+                Example: capsule, tablet, liquids, etc.
+              type: string
+              nullable: true
+            diagnosisCode:
+              description: |
+                Specific diagnosis code<br>
+                Example: G44.311
+              type: string
+              nullable: true
+            status:
+              description: "Current prescription status "
+              type: string
+              nullable: true
+            pharmacyNpi:
+              description: |
+                NPI of the pharmacy<br>
+                Example: 1346336807
+              type: string
+              nullable: true
+            patient:
+              $ref: '#/components/schemas/PatientPayload'
+            prescriber:
+              $ref: '#/components/schemas/PrescriberPayload'
+            insurance:
+              $ref: '#/components/schemas/InsurancePayload'
+            partnerId:
+              description: "Unique partner identifier associated with the prescription"
+              type: integer
+              format: int32
+              nullable: true
+            pharmacyNabp:
+              description: |
+                NABP of the pharmacy<br>
+                Example: 5929661 (Medly Dallas Pharmacy)
+              type: string
+              nullable: true
+            billingStatus:
+              type: string
+              description: |
+                Prescription billing status<br>
+                Example: Billed, unbilled, unknown, and EmptyString
+              nullable: true
+
+    PrescriptionStatusWebhookPayload:
+      allOf:
+      - $ref: '#/components/schemas/WebhookPayload'
+      type: object
+      properties:
+        payload:
+          type: object
+          properties:
+            id:
+              type: int
+              format: int64
+              description: Unique prescription identifier
+            status:
+              type: string
+              description: Current prescription status
+            metadata:
+              type: object
+              description: Additional details about the prescription status
+              properties:
+                changedAt:
+                  type: string
+                  description: |
+                    Timestamp (date and time) of the prescription status change<br>
+                    (YYYY-MM-DDTHH:MM:SS.000Z)<br>
+                    Example: 2020-11-16T13:00:00Z
+
+    PrescriptionDeliveryStatusWebhookPayload:
+      allOf:
+      - $ref: '#/components/schemas/WebhookPayload'
+      type: object
+      properties:
+        payload:
+          type: object
+          properties:
+            id:
+              type: int
+              format: int64
+              description: Unique prescription identifier
+            status:
+              type: string
+              description: Current prescription status
+            metadata:
+              type: object
+              description: Additonal details of prescription status
+              properties:
+                changedAt:
+                  type: string
+                  description: |
+                    Timestamp (date and time) of the prescription status change<br>
+                    (YYYY-MM-DDTHH:MM:SS.000Z)<br>
+                    Example: 2020-11-16T13:00:00Z
+                deliveryDetails:
+                  type: object
+                  description: Delivery details
+                  properties:
+                    scheduleTime:
+                      type: object
+                      description: |
+                        Delivery time details<br>ISO 8601 format<br>
+                        Example: 2020-07-10 15:00:00.000
+                      properties:
+                        from:
+                          type: string
+                          description: Delivery start time
+                        to:
+                          type: string
+                          description: Delivery end time
+                    address:
+                      $ref: '#/components/schemas/AddressPayload'
+                      description: Delivery address
+                carrier:
+                  type: string
+                  description: Name of the mail carrier service
+                trackingId:
+                  type: string
+                  description: A unique identifier for tracking the delivery
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        All API requests are authenticated using bearer access token authentication. Use your access token in an authorization HTTP header for all other requests.
+
+        To generate access tokens, we provide a <a href="#tag/token_api">token API</a>.
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+      example: abcdef12345
+      description: |
+        All the webhook notifications are authenticated using apiKeyAuth. This is a secret that is sent as a request header when Medly sends an event notification to the notification URL.

@@ -54,3 +54,21 @@ jobs:
 
     - name: Echo branch name
       run: echo ${{ env.BRANCH_NAME }}
+
+    - name: Set up Node 14
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+
+    - name: Generate API docs
+      run: |
+        npx redoc-cli bundle --output index.html spec.yml \
+        --options.theme.logo.gutter="30px" \
+        --options.theme.spacing.sectionVertical=5
+
+    - name: Upload Api Spec to Github artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: api-spec
+        path: index.html
+        retention-days: 1
