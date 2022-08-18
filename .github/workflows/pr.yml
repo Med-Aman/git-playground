@@ -62,7 +62,7 @@ jobs:
 
     - name: Generate API docs
       run: |
-        npx redoc-cli bundle --output index.html spec.yml \
+        npx redoc-cli bundle --output index.html ./spec.yml \
         --options.theme.logo.gutter="30px" \
         --options.theme.spacing.sectionVertical=5
 
