@@ -56,13 +56,13 @@ jobs:
       run: echo ${{ env.BRANCH_NAME }}
 
     - name: Set up Node 14
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
         node-version: '14'
 
     - name: Generate API docs
       run: |
-        npx redoc-cli bundle --output index.html .github/workflows/spec.yml \
+        npx redoc-cli bundle --output index.html ./spec.yml \
         --options.theme.logo.gutter="30px" \
         --options.theme.spacing.sectionVertical=5
 
