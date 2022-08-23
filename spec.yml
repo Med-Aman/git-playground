@@ -41,7 +41,7 @@ info:
     For more information about onboarding, reach out to your assigned account manager
 
     # Authorization
-    <!-- ReDoc-Inject: <security-definitions> -->
+    <!-- ReDoc-Inject: <SecurityDefinitions /> -->
 
   version: 0.0.1
   x-logo:
