@@ -40,7 +40,9 @@ info:
     Following that, in order to acquire the **client ID** and **client secret**, you must provide a list of the Medly APIs you intend to utilize. We provide you with two sets of client IDs and client secret keys. One set is for the sandbox environment, while the other is for the production environment.<br><br>
     For more information about onboarding, reach out to your assigned account manager
 
-    <SecurityDefinitions />
+    # Authorization
+    <!-- ReDoc-Inject: <security-definitions> -->
+
   version: 0.0.1
   x-logo:
     #TODO -> change url of image
