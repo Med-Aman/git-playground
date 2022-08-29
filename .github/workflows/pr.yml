@@ -64,8 +64,7 @@ jobs:
       run: |
         npx redoc-cli build --output index.html ./spec.yml \
         --options.theme.logo.gutter="30px" \
-        --options.theme.spacing.sectionVertical=5 \
-        && redoc-cli --version
+        --options.theme.spacing.sectionVertical=5
 
     - name: Upload Api Spec to Github artifacts
       uses: actions/upload-artifact@v3
