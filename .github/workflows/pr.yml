@@ -1,4 +1,4 @@
-name: playground-foo
+name: Upload artifacts and deploy to lower environment
 
 on:
   pull_request:
