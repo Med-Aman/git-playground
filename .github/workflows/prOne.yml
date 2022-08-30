@@ -1,4 +1,4 @@
-name: playground-foo-1
+name: playground-foo
 
 on:
   pull_request:
